@@ -2772,7 +2772,8 @@ exports.PaperbackInfo = {
             text: 'Self hosted',
             type: types_1.BadgeColor.RED
         },
-    ]
+    ],
+    intents: types_1.SourceIntents.MANGA_CHAPTERS | types_1.SourceIntents.HOMEPAGE_SECTIONS | types_1.SourceIntents.SETTINGS_UI
 };
 const SUPPORTED_IMAGE_TYPES = [
     'image/jpeg',
@@ -2868,22 +2869,22 @@ class Paperback extends types_1.Source {
             try {
                 const komgaAPI = yield (0, Common_1.getKomgaAPI)(this.stateManager);
                 const genresRequest = App.createRequest({
-                    url: `${komgaAPI}/genres/`,
+                    url: `${komgaAPI}/genres`,
                     method: 'GET'
                 });
                 genresResponse = yield this.requestManager.schedule(genresRequest, 1);
                 const tagsRequest = App.createRequest({
-                    url: `${komgaAPI}/tags/series/`,
+                    url: `${komgaAPI}/tags/series`,
                     method: 'GET'
                 });
                 tagsResponse = yield this.requestManager.schedule(tagsRequest, 1);
                 const collectionRequest = App.createRequest({
-                    url: `${komgaAPI}/collections/`,
+                    url: `${komgaAPI}/collections`,
                     method: 'GET'
                 });
                 collectionResponse = yield this.requestManager.schedule(collectionRequest, 1);
                 const libraryRequest = App.createRequest({
-                    url: `${komgaAPI}/libraries/`,
+                    url: `${komgaAPI}/libraries`,
                     method: 'GET'
                 });
                 libraryResponse = yield this.requestManager.schedule(libraryRequest, 1);
@@ -2931,7 +2932,7 @@ class Paperback extends types_1.Source {
                     */
             const komgaAPI = yield (0, Common_1.getKomgaAPI)(this.stateManager);
             const request = App.createRequest({
-                url: `${komgaAPI}/series/${mangaId}/`,
+                url: `${komgaAPI}/series/${mangaId}`,
                 method: 'GET'
             });
             const response = yield this.requestManager.schedule(request, 1);
@@ -2990,7 +2991,7 @@ class Paperback extends types_1.Source {
             const chapters = [];
             // Chapters language is only available on the serie page
             const serieRequest = App.createRequest({
-                url: `${komgaAPI}/series/${mangaId}/`,
+                url: `${komgaAPI}/series/${mangaId}`,
                 method: 'GET'
             });
             const serieResponse = yield this.requestManager.schedule(serieRequest, 1);
@@ -3032,7 +3033,7 @@ class Paperback extends types_1.Source {
             }
             // Determine the preferred reading direction which is only available in the serie metadata
             const serieRequest = App.createRequest({
-                url: `${komgaAPI}/series/${mangaId}/`,
+                url: `${komgaAPI}/series/${mangaId}`,
                 method: 'GET'
             });
             const serieResponse = yield this.requestManager.schedule(serieRequest, 1);
@@ -3194,7 +3195,7 @@ class Paperback extends types_1.Source {
             let loadMore = true;
             while (loadMore) {
                 const request = App.createRequest({
-                    url: `${komgaAPI}/series/updated/`,
+                    url: `${komgaAPI}/series/updated`,
                     param: `?page=${page}&size=${PAGE_SIZE}&deleted=false`,
                     method: 'GET'
                 });
