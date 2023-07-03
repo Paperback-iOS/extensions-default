@@ -15,7 +15,8 @@ import { Chapter,
     SourceStateManager,
     TagSection,
     BadgeColor,
-    SourceInterceptor } from '@paperback/types'
+    SourceInterceptor, 
+    SourceIntents} from '@paperback/types'
 import { parseLangCode } from './Languages'
 import { resetSettingsButton,
     serverSettingsMenu,
@@ -51,7 +52,8 @@ export const PaperbackInfo: SourceInfo = {
             text: 'Self hosted',
             type: BadgeColor.RED
         },
-    ]
+    ],
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.SETTINGS_UI
 }
 const SUPPORTED_IMAGE_TYPES = [
     'image/jpeg',
@@ -138,22 +140,22 @@ export class Paperback extends Source {
         try {
             const komgaAPI = await getKomgaAPI(this.stateManager)
             const genresRequest = App.createRequest({
-                url: `${komgaAPI}/genres/`,
+                url: `${komgaAPI}/genres`,
                 method: 'GET'
             })
             genresResponse = await this.requestManager.schedule(genresRequest, 1)
             const tagsRequest = App.createRequest({
-                url: `${komgaAPI}/tags/series/`,
+                url: `${komgaAPI}/tags/series`,
                 method: 'GET'
             })
             tagsResponse = await this.requestManager.schedule(tagsRequest, 1)
             const collectionRequest = App.createRequest({
-                url: `${komgaAPI}/collections/`,
+                url: `${komgaAPI}/collections`,
                 method: 'GET'
             })
             collectionResponse = await this.requestManager.schedule(collectionRequest, 1)
             const libraryRequest = App.createRequest({
-                url: `${komgaAPI}/libraries/`,
+                url: `${komgaAPI}/libraries`,
                 method: 'GET'
             })
             libraryResponse = await this.requestManager.schedule(libraryRequest, 1)
@@ -210,7 +212,7 @@ export class Paperback extends Source {
                 */
         const komgaAPI = await getKomgaAPI(this.stateManager)
         const request = App.createRequest({
-            url: `${komgaAPI}/series/${mangaId}/`,
+            url: `${komgaAPI}/series/${mangaId}`,
             method: 'GET'
         })
         const response = await this.requestManager.schedule(request, 1)
@@ -270,7 +272,7 @@ export class Paperback extends Source {
         const chapters: Chapter[] = []
         // Chapters language is only available on the serie page
         const serieRequest = App.createRequest({
-            url: `${komgaAPI}/series/${mangaId}/`,
+            url: `${komgaAPI}/series/${mangaId}`,
             method: 'GET'
         })
         const serieResponse = await this.requestManager.schedule(serieRequest, 1)
@@ -310,7 +312,7 @@ export class Paperback extends Source {
         }
         // Determine the preferred reading direction which is only available in the serie metadata
         const serieRequest = App.createRequest({
-            url: `${komgaAPI}/series/${mangaId}/`,
+            url: `${komgaAPI}/series/${mangaId}`,
             method: 'GET'
         })
         const serieResponse = await this.requestManager.schedule(serieRequest, 1)
@@ -464,7 +466,7 @@ export class Paperback extends Source {
         let loadMore = true
         while (loadMore) {
             const request = App.createRequest({
-                url: `${komgaAPI}/series/updated/`,
+                url: `${komgaAPI}/series/updated`,
                 param: `?page=${page}&size=${PAGE_SIZE}&deleted=false`,
                 method: 'GET'
             })
