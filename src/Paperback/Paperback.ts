@@ -16,7 +16,11 @@ import { Chapter,
     TagSection,
     BadgeColor,
     SourceInterceptor, 
-    SourceIntents} from '@paperback/types'
+    SourceIntents,
+    MangaProgressProviding,
+    TrackerActionQueue,
+    DUIForm
+} from '@paperback/types'
 import { parseLangCode } from './Languages'
 import { resetSettingsButton,
     serverSettingsMenu,
@@ -53,7 +57,7 @@ export const PaperbackInfo: SourceInfo = {
             type: BadgeColor.RED
         },
     ],
-    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.SETTINGS_UI
+    intents: SourceIntents.MANGA_CHAPTERS | SourceIntents.HOMEPAGE_SECTIONS | SourceIntents.SETTINGS_UI | SourceIntents.MANGA_TRACKING
 }
 const SUPPORTED_IMAGE_TYPES = [
     'image/jpeg',
@@ -493,6 +497,70 @@ export class Paperback extends Source {
                 mangaUpdatesFoundCallback(App.createMangaUpdates({
                     ids: foundIds
                 }))
+            }
+        }
+    }
+
+    async getMangaProgressManagementForm(mangaId: string): Promise<DUIForm>  {
+        return App.createDUIForm({
+            sections: async () => {
+                return [
+                    App.createDUISection({
+                        id: 'mangaId',
+                        rows: async () => [
+                            App.createDUILabel({
+                                id: 'id',
+                                label: 'Manga id: ' + mangaId,
+                                value: undefined
+                            }),
+                            App.createDUILabel({
+                                id: 'info',
+                                label: 'The app will sync read chapters to the Komga server',
+                                value: undefined
+                            })
+                        ],
+                        isHidden: false
+                    })
+                ]
+            },
+            onSubmit: () => {
+                return Promise.resolve()
+            },
+        })
+    } 
+
+    async processChapterReadActionQueue(actionQueue: TrackerActionQueue): Promise<void>  {
+        const chapterReadActions = await actionQueue.queuedChapterReadActions()
+        const komgaAPI = await getKomgaAPI(this.stateManager)
+
+        for (const readAction of chapterReadActions) {
+            if (readAction.sourceId != 'Komga') {
+                console.log(`Manga ${readAction.mangaId} from source ${readAction.sourceId} can not be used as it does not come from Komga. Discarding`)
+                await actionQueue.discardChapterReadAction(readAction)
+            } else {
+                try {
+                    // The app only support completed read status so the last page read is not important and set to 1
+                    const request = App.createRequest({
+                        url: `${komgaAPI}/books/${readAction.sourceChapterId}/read-progress`,
+                        method: 'PATCH',
+                        data: {
+                            'page': 1,
+                            'completed': true
+                        }
+                    })
+                  
+                    const response = await this.requestManager.schedule(request, 1)
+                  
+                    if(response.status < 400) {
+                        await actionQueue.discardChapterReadAction(readAction)
+                    } else {
+                        await actionQueue.retryChapterReadAction(readAction)
+                    }
+                } catch(error) {
+                    console.log(`Tracker action for manga id ${readAction.mangaId} failed with error:`)
+                    console.log(error)
+                    await actionQueue.retryChapterReadAction(readAction)
+                }
             }
         }
     }
