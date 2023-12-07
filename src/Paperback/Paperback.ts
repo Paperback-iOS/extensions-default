@@ -89,18 +89,24 @@ export class KomgaRequestInterceptor implements SourceInterceptor {
         return response
     }
     async interceptRequest(request: Request): Promise<Request> {
-        // NOTE: Doing it like this will make downloads work tried every other method did not work, if there is a better method make edit it and make pull request
-        if (request.url.includes('intercept*')) {
-            const url = request?.url?.split('*').pop() ?? ''
-            request.headers = {
-                'authorization': await getAuthorizationString(this.stateManager)
-            }
-            request.url = url
-            return request
-        }
+        //
+        // Paper's Note: Reopen a new merge request if downloads break again,
+        // pages stopped loading because of this on iOS 17.0
+        //
+        // // NOTE: Doing it like this will make downloads work tried every other method did not work, if there is a better method make edit it and make pull request
+        // if (request.url.includes('intercept*')) {
+        //     const url = request?.url?.split('*').pop() ?? ''
+        //     request.headers = {
+        //         'authorization': await getAuthorizationString(this.stateManager)
+        //     }
+        //     request.url = url
+        //     return request
+        // }
+
         if (request.headers === undefined) {
             request.headers = {}
         }
+
         // We mustn't call this.getAuthorizationString() for the stateful submission request.
         // This procedure indeed catchs the request used to check user credentials
         // which can happen before an authorizationString is saved,
@@ -308,10 +314,10 @@ export class Paperback extends Source {
         const pages: string[] = []
         for (const page of result) {
             if (SUPPORTED_IMAGE_TYPES.includes(page.mediaType)) {
-                pages.push(`intercept*${komgaAPI}/books/${chapterId}/pages/${page.number}`)
+                pages.push(`${komgaAPI}/books/${chapterId}/pages/${page.number}`)
             }
             else {
-                pages.push(`intercept*${komgaAPI}/books/${chapterId}/pages/${page.number}?convert=png`)
+                pages.push(`${komgaAPI}/books/${chapterId}/pages/${page.number}?convert=png`)
             }
         }
         // Determine the preferred reading direction which is only available in the serie metadata
@@ -543,6 +549,7 @@ export class Paperback extends Source {
                     const request = App.createRequest({
                         url: `${komgaAPI}/books/${readAction.sourceChapterId}/read-progress`,
                         method: 'PATCH',
+                        headers: { 'content-type': 'application/json' },
                         data: {
                             'page': 1,
                             'completed': true
@@ -552,8 +559,11 @@ export class Paperback extends Source {
                     const response = await this.requestManager.schedule(request, 1)
                   
                     if(response.status < 400) {
+                        console.log(`${readAction.sourceChapterId} chapter marked as read`)
                         await actionQueue.discardChapterReadAction(readAction)
                     } else {
+                        console.log(`${readAction.sourceChapterId} chapter needs to be retried`)
+                        console.log(`${response.status} --- ${response.data}`)
                         await actionQueue.retryChapterReadAction(readAction)
                     }
                 } catch(error) {
