@@ -39,7 +39,7 @@ import { getAuthorizationString,
 //  - getTags() which is called on the homepage
 //  - search method which is called even if the user search in an other source
 export const PaperbackInfo: SourceInfo = {
-    version: '1.2.10',
+    version: '1.2.11',
     name: 'Paperback',
     icon: 'icon.png',
     author: 'Lemon | Faizan Durrani',
