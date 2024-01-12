@@ -18,7 +18,7 @@ export const testServerSettings = async (stateManager: SourceStateManager, reque
     // To test these information, we try to make a connection to the server
     // We could use a better endpoint to test the connection
     const request = App.createRequest({
-        url: `${komgaAPI}/libraries/`,
+        url: `${komgaAPI}/libraries`,
         method: 'GET',
         headers: { authorization: authorization }
     })
