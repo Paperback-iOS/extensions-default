@@ -374,8 +374,9 @@ export class KomgaExtension implements IKomgaExtension {
       chapters.push({
         chapterId: book.id,
         chapNum: parseFloat(book.metadata.number),
+        volume: 0,
         langCode: book.size,
-        title: `${book.metadata.title}`,
+        title: '',
         creationDate: new Date(book.fileLastModified),
         sortingIndex: book.metadata.numberSort,
         sourceManga: sourceManga,
