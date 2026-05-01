@@ -377,7 +377,7 @@ export class KomgaExtension implements IKomgaExtension {
         volume: 0,
         langCode: book.size,
         title: '',
-        creationDate: new Date(book.fileLastModified),
+        creationDate: book.metadata.releaseDate ? new Date(book.metadata.releaseDate) : new Date(book.fileLastModified),
         sortingIndex: book.metadata.numberSort,
         sourceManga: sourceManga,
         version: languageCode,
