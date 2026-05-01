@@ -150,12 +150,14 @@ export class KomgaExtension implements IKomgaExtension {
         primaryTitle: metadata.title,
         secondaryTitles: [],
         contentRating: ContentRating.EVERYONE,
-
         status: parseMangaStatus(metadata.status),
         artist: artists.join(', '),
         author: authors.join(', '),
         synopsis: metadata.summary ? metadata.summary : booksMetadata.summary,
         tagGroups: tagSections,
+        additionalInfo: {
+          language: metadata.language,
+        },
       },
     }
   }
