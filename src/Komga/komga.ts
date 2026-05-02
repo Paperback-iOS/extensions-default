@@ -379,7 +379,7 @@ export class KomgaExtension implements IKomgaExtension {
         volume: 0,
         langCode: book.size,
         title: (book.metadata.title ?? '').replace(/^chapter\s+[\d.]+[:\s-]*/i, '').trim(),
-        creationDate: book.metadata.releaseDate ? new Date(book.metadata.releaseDate) : new Date(book.fileLastModified),
+        publishDate: book.metadata.releaseDate ? new Date(book.metadata.releaseDate) : new Date(book.fileLastModified),
         sortingIndex: book.metadata.numberSort,
         sourceManga: sourceManga,
         version: languageCode,
