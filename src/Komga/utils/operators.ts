@@ -1,4 +1,4 @@
-import type { Is, IsFalse, IsNot, IsTrue } from './sdk/types.gen.js'
+import type { Is, IsFalse, IsNot, IsTrue } from '../sdk/types.gen.js'
 
 export function Operator<T extends string, V>(
   o: { operator: Uncapitalize<T> } & V

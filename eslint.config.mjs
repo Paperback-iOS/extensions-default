@@ -1,6 +1,5 @@
 import js from '@eslint/js'
 import tseslint from 'typescript-eslint'
-// import json from "@eslint/json";
 import { defineConfig } from 'eslint/config'
 import eslintConfigPrettier from 'eslint-config-prettier/flat'
 

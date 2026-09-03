@@ -1,5 +1,5 @@
 import path from 'node:path'
-import {paperbackClientPlugin} from './src/paperback-openapi-client/plugin.js'
+import { paperbackClientPlugin } from './src/paperback-openapi-client/plugin.js'
 
 /** @type {import('@hey-api/openapi-ts').UserConfig} */
 export default {
@@ -14,6 +14,6 @@ export default {
   parser: {},
   plugins: [
     ...['@hey-api/typescript', '@hey-api/sdk'],
-    paperbackClientPlugin()
-  ]
+    paperbackClientPlugin(),
+  ],
 }

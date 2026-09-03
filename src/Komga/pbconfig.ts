@@ -5,7 +5,7 @@ import {
 } from '@paperback/types'
 
 export default {
-  version: '3.0',
+  version: '3.9.4',
   name: 'Komga',
   icon: 'icon.png',
   developers: [
@@ -16,6 +16,10 @@ export default {
     {
       name: 'Lemon',
       github: 'FramboisePi',
+    },
+    {
+      name: 'Exikle',
+      github: 'Exikle',
     },
   ],
   description: 'Komga client extension for Paperback',

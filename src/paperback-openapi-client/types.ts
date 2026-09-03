@@ -1,25 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Auth } from './core/auth.js';
-import type { Client as CoreClient, Config as CoreConfig } from './core/types.js';
+import type { Auth } from './core/auth.js'
+import type {
+  Client as CoreClient,
+  Config as CoreConfig,
+} from './core/types.js'
 import type { Headers } from './Headers+Disposable.js'
-import type { Middleware } from './utils.js';
+import type { Middleware } from './utils.js'
 
 import type { Request, Response } from '@paperback/types'
 
 export interface Config<T extends ClientOptions = ClientOptions>
-  extends Omit<RequestInit, 'body' | 'headers' | 'method'>,
-    CoreConfig {
+  extends Omit<RequestInit, 'body' | 'headers' | 'method'>, CoreConfig {
   /**
    * Base URL for all requests made by this client.
    */
-  baseUrl?: T['baseUrl'];
+  baseUrl?: T['baseUrl']
   /**
    * Fetch API implementation. You can use this option to provide a custom
    * fetch instance.
    *
    * @default globalThis.fetch
    */
-  fetch?: (request: Request) => ReturnType<typeof fetch>;
+  fetch?: (request: Request) => ReturnType<typeof fetch>
   /**
    * Return the response data parsed in a specified format. By default, `auto`
    * will infer the appropriate method from the `Content-Type` response header.
@@ -27,37 +29,34 @@ export interface Config<T extends ClientOptions = ClientOptions>
    *
    * @default 'json'
    */
-  parseAs?:
-    | 'arrayBuffer'
-    | 'json'
-    | 'text';
+  parseAs?: 'arrayBuffer' | 'json' | 'text'
   /**
    * Throw an error instead of returning it in the response?
    *
    * @default false
    */
-  throwOnError?: T['throwOnError'];
+  throwOnError?: T['throwOnError']
 }
 
 export interface RequestOptions<
   ThrowOnError extends boolean = boolean,
   Url extends string = string,
 > extends Config<{
-    throwOnError: ThrowOnError;
-  }> {
+  throwOnError: ThrowOnError
+}> {
   /**
    * Any body that you want to add to your request.
    *
    * {@link https://developer.mozilla.org/docs/Web/API/fetch#body}
    */
-  body?: unknown;
-  path?: Record<string, unknown>;
-  query?: Record<string, unknown>;
+  body?: unknown
+  path?: Record<string, unknown>
+  query?: Record<string, unknown>
   /**
    * Security mechanism(s) to use for the request.
    */
-  security?: ReadonlyArray<Auth>;
-  url: Url;
+  security?: ReadonlyArray<Auth>
+  url: Url
 
   headers?: Headers | Record<string, string | null>
 }
@@ -67,38 +66,34 @@ export type RequestResult<
   TError = unknown,
   ThrowOnError extends boolean = boolean,
 > = ThrowOnError extends true
-  ? Promise<
-      {
-            data: TData extends Record<string, unknown>
-              ? TData[keyof TData]
-              : TData;
-            request: Request;
-            response: Response;
-          }
-    >
+  ? Promise<{
+      data: TData extends Record<string, unknown> ? TData[keyof TData] : TData
+      request: Request
+      response: Response
+    }>
   : Promise<
       (
-            | {
-                data: TData extends Record<string, unknown>
-                  ? TData[keyof TData]
-                  : TData;
-                error: undefined;
-              }
-            | {
-                data: undefined;
-                error: TError extends Record<string, unknown>
-                  ? TError[keyof TError]
-                  : TError;
-              }
-          ) & {
-            request: Request;
-            response: Response;
+        | {
+            data: TData extends Record<string, unknown>
+              ? TData[keyof TData]
+              : TData
+            error: undefined
           }
-    >;
+        | {
+            data: undefined
+            error: TError extends Record<string, unknown>
+              ? TError[keyof TError]
+              : TError
+          }
+      ) & {
+        request: Request
+        response: Response
+      }
+    >
 
 export interface ClientOptions {
-  baseUrl?: string;
-  throwOnError?: boolean;
+  baseUrl?: string
+  throwOnError?: boolean
 }
 
 type MethodFn = <
@@ -106,8 +101,8 @@ type MethodFn = <
   TError = unknown,
   ThrowOnError extends boolean = false,
 >(
-  options: Omit<RequestOptions<ThrowOnError>, 'method'>,
-) => RequestResult<TData, TError, ThrowOnError>;
+  options: Omit<RequestOptions<ThrowOnError>, 'method'>
+) => RequestResult<TData, TError, ThrowOnError>
 
 type RequestFn = <
   TData = unknown,
@@ -115,23 +110,23 @@ type RequestFn = <
   ThrowOnError extends boolean = false,
 >(
   options: Omit<RequestOptions<ThrowOnError>, 'method'> &
-    Pick<Required<RequestOptions<ThrowOnError>>, 'method'>,
-) => RequestResult<TData, TError, ThrowOnError>;
+    Pick<Required<RequestOptions<ThrowOnError>>, 'method'>
+) => RequestResult<TData, TError, ThrowOnError>
 
 type BuildUrlFn = <
   TData extends {
-    body?: unknown;
-    path?: Record<string, unknown>;
-    query?: Record<string, unknown>;
-    url: string;
+    body?: unknown
+    path?: Record<string, unknown>
+    query?: Record<string, unknown>
+    url: string
   },
 >(
-  options: Pick<TData, 'url'> & Options<TData>,
-) => string;
+  options: Pick<TData, 'url'> & Options<TData>
+) => string
 
 export type Client = CoreClient<RequestFn, Config, MethodFn, BuildUrlFn> & {
-  interceptors: Middleware<Request, Response, unknown, RequestOptions>;
-};
+  interceptors: Middleware<Request, Response, unknown, RequestOptions>
+}
 
 /**
  * The `createClientConfig()` function will be called on client initialization
@@ -142,24 +137,24 @@ export type Client = CoreClient<RequestFn, Config, MethodFn, BuildUrlFn> & {
  * to ensure your client always has the correct values.
  */
 export type CreateClientConfig<T extends ClientOptions = ClientOptions> = (
-  override?: Config<ClientOptions & T>,
-) => Config<Required<ClientOptions> & T>;
+  override?: Config<ClientOptions & T>
+) => Config<Required<ClientOptions> & T>
 
 export interface TDataShape {
-  body?: unknown;
-  headers?: unknown;
-  path?: unknown;
-  query?: unknown;
-  url: string;
+  body?: unknown
+  headers?: unknown
+  path?: unknown
+  query?: unknown
+  url: string
 }
 
-type OmitKeys<T, K> = Pick<T, Exclude<keyof T, K>>;
+type OmitKeys<T, K> = Pick<T, Exclude<keyof T, K>>
 
 export type Options<
   TData extends TDataShape = TDataShape,
   ThrowOnError extends boolean = boolean,
 > = OmitKeys<RequestOptions<ThrowOnError>, 'body' | 'path' | 'query' | 'url'> &
-  Omit<TData, 'url'>;
+  Omit<TData, 'url'>
 
 export type OptionsLegacyParser<
   TData = unknown,
@@ -174,4 +169,4 @@ export type OptionsLegacyParser<
     ? OmitKeys<RequestOptions<ThrowOnError>, 'headers' | 'url'> &
         TData &
         Pick<RequestOptions<ThrowOnError>, 'body'>
-    : OmitKeys<RequestOptions<ThrowOnError>, 'url'> & TData;
+    : OmitKeys<RequestOptions<ThrowOnError>, 'url'> & TData

@@ -1,8 +1,11 @@
 import {
+  ButtonRow,
   Form,
   InputRow,
+  LabelRow,
   Section,
   type FormSectionElement,
+  type LabelRowValue,
 } from '@paperback/types'
 import {
   getKomgaBaseURL,
@@ -10,7 +13,7 @@ import {
   setKomgaBaseURL,
   setKomgaCredentials,
 } from '../utils/config.js'
-import { getCurrentUser } from '../sdk/sdk.gen.js'
+import { checkKomgaConnection } from '../utils/connection.js'
 
 export class ServerSettingsForm extends Form {
   baseUrl = getKomgaBaseURL()
@@ -62,6 +65,7 @@ export class ServerSettingsForm extends Form {
         InputRow('password', {
           title: 'Password',
           value: this.credentials.password,
+          isSecureEntry: true,
           onValueChange: Application.Selector(
             this as ServerSettingsForm,
             'passwordDidChange'
@@ -71,40 +75,63 @@ export class ServerSettingsForm extends Form {
     )
   }
 
+  // Result of the last `Test Connection` press, shown without saving anything
+  private connectionStatus: LabelRowValue | undefined
+
+  connectionSection() {
+    // Section accepts undefined entries, so the status row can simply be absent
+    // until a check has run
+    return Section({ id: 'connection' }, [
+      ButtonRow('testConnection', {
+        title: 'Test Connection',
+        onSelect: Application.Selector(
+          this as ServerSettingsForm,
+          'testConnection'
+        ),
+      }),
+      this.connectionStatus
+        ? LabelRow('connectionStatus', {
+            title: 'Status',
+            value: this.connectionStatus,
+          })
+        : undefined,
+    ])
+  }
+
+  async testConnection(): Promise<void> {
+    this.connectionStatus = { text: 'Checking...', style: 'tinted' }
+    this.reloadForm()
+
+    const { ok, message } = await checkKomgaConnection(
+      this.baseUrl,
+      this.credentials
+    )
+    this.connectionStatus = { text: message, style: ok ? 'success' : 'error' }
+    this.reloadForm()
+  }
+
   override getSections(): FormSectionElement<unknown>[] {
-    return [this.baseUrlSection(), this.credentialsSection()]
+    return [
+      this.baseUrlSection(),
+      this.credentialsSection(),
+      this.connectionSection(),
+    ]
   }
 
   // Validate the credentials
   override requiresExplicitSubmission: boolean = true
 
   override async formDidSubmit(): Promise<void> {
-    const { error, response } = await getCurrentUser({
-      baseUrl: this.baseUrl,
-      auth: (auth) => {
-        if (auth.scheme === 'basic') {
-          return `${this.credentials.username}:${this.credentials.password}`
-        } else {
-          return undefined
-        }
-      },
-    })
+    const { ok, message } = await checkKomgaConnection(
+      this.baseUrl,
+      this.credentials
+    )
 
-    if (!error) {
-      setKomgaBaseURL(this.baseUrl)
-      setKomgaCredentials(this.credentials.username, this.credentials.password)
-      return
+    if (!ok) {
+      throw new Error(message)
     }
 
-    switch (response.status) {
-      case 401: {
-        throw new Error('Error 401 Unauthorized: Invalid credentials')
-      }
-      default: {
-        throw new Error(
-          `Error ${response.status}: ${error.violations.map((x) => x.message).join('\n')}`
-        )
-      }
-    }
+    setKomgaBaseURL(this.baseUrl)
+    setKomgaCredentials(this.credentials.username, this.credentials.password)
   }
 }

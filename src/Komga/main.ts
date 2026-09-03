@@ -1,3 +1,3 @@
-import { KomgaExtension } from "./komga.js";
+import { KomgaExtension } from './komga.js'
 
 export const Komga = new KomgaExtension()

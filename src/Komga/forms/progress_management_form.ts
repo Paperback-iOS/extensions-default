@@ -53,7 +53,7 @@ export class ProgressManagementForm extends Form {
   }
 
   private get currentChapterTitle(): string {
-    return this.selectedChapter?.title ?? 'No chapters read'
+    return this.selectedChapter?.title || 'No chapters read'
   }
 
   override getSections(): FormSectionElement<unknown>[] {
@@ -80,7 +80,7 @@ export class ProgressManagementForm extends Form {
               { id: 'unread', title: 'No chapters read' },
               ...this.sortedChapters.map((chapter) => ({
                 id: chapter.chapterId,
-                title: chapter.title ?? `Chapter ${chapter.chapNum}`,
+                title: chapter.title || `Chapter ${chapter.chapNum}`,
               })),
             ],
             onValueChange: Application.Selector(

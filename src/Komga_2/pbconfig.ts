@@ -1,6 +1,4 @@
-import {
-  type ExtensionInfo,
-} from '@paperback/types'
+import { type ExtensionInfo } from '@paperback/types'
 
 import KomgaConfig from '../Komga/pbconfig.js'
 

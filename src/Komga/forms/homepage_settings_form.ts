@@ -1,52 +1,71 @@
 import {
+  closureSelector,
   Form,
   Section,
+  SelectRow,
   ToggleRow,
   type FormSectionElement,
 } from '@paperback/types'
 import {
-  getShowContinueReading,
-  getShowOnDeck,
-  setShowContinueReading,
-  setShowOnDeck,
+  getSectionStyle,
+  SECTION_STYLES,
+  setSectionStyle,
+  type SectionStyle,
 } from '../utils/config.js'
+import { DISCOVER_SECTIONS } from '../discover_sections.js'
 
 export class HomepageSettingsForm extends Form {
   override getSections(): FormSectionElement<unknown>[] {
-    return [this.staticHomepageSection()]
+    return [
+      Section(
+        {
+          id: 'sections',
+          header: 'Homepage Sections',
+          footer:
+            'Regular, Large and Hero change how a section presents its covers. Hidden removes it from the homepage.',
+        },
+        // A row handler takes only its new value, so each row closes over the
+        // section it belongs to rather than needing a method per section
+        DISCOVER_SECTIONS.map((section) =>
+          section.fixedStyle
+            ? ToggleRow(section.id, {
+                title: section.title,
+                subtitle: section.description,
+                value: getSectionStyle(section.id) !== 'hidden',
+                onValueChange: closureSelector(
+                  this,
+                  `visible_${section.id}`,
+                  async (value: boolean) => {
+                    this.applyStyle(section.id, value ? 'simple' : 'hidden')
+                  }
+                ),
+              })
+            : SelectRow(section.id, {
+                title: section.title,
+                subtitle: section.description,
+                value: [getSectionStyle(section.id)],
+                minItemCount: 1,
+                maxItemCount: 1,
+                layout: 'list',
+                items: SECTION_STYLES,
+                onValueChange: closureSelector(
+                  this,
+                  `style_${section.id}`,
+                  async (value: string[]) => {
+                    const style = value[0]
+                    if (style) {
+                      this.applyStyle(section.id, style as SectionStyle)
+                    }
+                  }
+                ),
+              })
+        )
+      ),
+    ]
   }
 
-  staticHomepageSection(): FormSectionElement<unknown> {
-    return Section(
-      { id: 'staticHomepageSection', header: 'Static Hompage Sections' },
-      [
-        ToggleRow('showOnDeck', {
-          title: 'On Deck',
-          value: getShowOnDeck(),
-          onValueChange: Application.Selector(
-            this as HomepageSettingsForm,
-            'showOnDeckDidChange'
-          ),
-        }),
-        ToggleRow('showContinueReading', {
-          title: 'Continue Reading',
-          value: getShowContinueReading(),
-          onValueChange: Application.Selector(
-            this as HomepageSettingsForm,
-            'showContinueReadingDidChange'
-          ),
-        }),
-      ]
-    )
-  }
-
-  async showOnDeckDidChange(newValue: boolean): Promise<void> {
-    setShowOnDeck(newValue)
-    Application.invalidateDiscoverSections()
-  }
-
-  async showContinueReadingDidChange(newValue: boolean): Promise<void> {
-    setShowContinueReading(newValue)
+  private applyStyle(sectionId: string, style: SectionStyle): void {
+    setSectionStyle(sectionId, style)
     Application.invalidateDiscoverSections()
   }
 }
